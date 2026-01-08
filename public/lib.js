@@ -1,10 +1,14 @@
 "use strict";
 
+const API_BASE = "https://bcak-8yoa.onrender.com";
+
 export const API = {
-  products: "/api/products",
-  product: (id) => `/api/products/${encodeURIComponent(id)}`,
-  orders: "/api/orders"
+  products: `${API_BASE}/api/products`,
+  product: (id) =>
+    `${API_BASE}/api/products/${encodeURIComponent(id)}`,
+  orders: `${API_BASE}/api/orders`
 };
+
 
 export function money(n) {
   const x = Number(n);
