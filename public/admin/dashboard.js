@@ -400,7 +400,7 @@ function selectOrder(id, scroll = true) {
     const orderMsg = document.getElementById("orderMsg");
     orderMsg.innerHTML = "";
     try {
-      await adminJson(`/admin/api/orders/${encodeURIComponent(id)}/status`, {
+      await adminJson(`https://bcak-8yoa.onrender.com/admin/api/orders/${encodeURIComponent(id)}/status`, {
         method: "PUT",
         body: JSON.stringify({ status: s })
       });
