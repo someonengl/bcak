@@ -282,7 +282,7 @@ function renderOrders() {
     <tr data-open="${esc(o.id)}" style="cursor:pointer">
       <td>
         <div style="font-weight:900">${esc(o.id)}</div>
-        <div class="muted small">${esc(formatDate(o.createdAt))}</div>
+        <div class="muted small">${esc(formatDate(o.created_At))}</div>
       </td>
       <td><span class="pill" style="border-radius:12px">${esc(o.status || "NEW")}</span></td>
       <td>
@@ -349,7 +349,7 @@ function selectOrder(id, scroll = true) {
         </div>
         <div>
           <div style="font-weight:900">Created</div>
-          <div class="muted small">${esc(formatDate(o.createdAt))}</div>
+          <div class="muted small">${esc(formatDate(o.created_At))}</div>
         </div>
         <div>
           <div style="font-weight:900">Total</div>
@@ -439,7 +439,7 @@ exportCsvBtn.addEventListener("click", () => {
     const items = (o.items || []).map(it => `${it.name} x${it.qty}`).join(" | ");
     rows.push([
       o.id,
-      o.createdAt,
+      o.created_At,
       o.status,
       String(o.total ?? ""),
       o.customer?.name ?? "",
