@@ -371,38 +371,36 @@ app.delete("/admin/api/products/:id", requireAdmin, async (req, res) => {
 });
 
 
-app.get("/admin/api/orders", requireAdmin, (req, res) => {
-  const db = getOrders();
-  res.json({ items: db.items, updatedAt: db.updatedAt });
+app.get("/admin/api/orders", requireAdmin, async (req, res) => {
+  const { data, error } = await supabase
+    .from("orders")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ items: data });
 });
 
-app.put("/admin/api/orders/:id/status", requireAdmin, (req, res) => {
-  const id = String(req.params.id || "");
-  const status = String((req.body || {}).status || "")
-    .toUpperCase()
-    .trim();
 
-  const allowed = new Set([
-    "NEW",
-    "PROCESSING",
-    "FULFILLED",
-    "CANCELLED"
-  ]);
+app.put("/admin/api/orders/:id/status", requireAdmin, async (req, res) => {
+  const status = String(req.body.status || "").toUpperCase();
 
-  if (!allowed.has(status)) {
+  const allowed = ["NEW", "PROCESSING", "FULFILLED", "CANCELLED"];
+  if (!allowed.includes(status)) {
     return res.status(400).json({ error: "Invalid status" });
   }
 
-  const db = getOrders();
-  const idx = db.items.findIndex(o => o.id === id);
-  if (idx < 0) return res.status(404).json({ error: "Not found" });
+  const { data, error } = await supabase
+    .from("orders")
+    .update({ status })
+    .eq("id", req.params.id)
+    .select()
+    .single();
 
-  db.items[idx].status = status;
-  db.items[idx].updatedAt = nowIso();
-  saveOrders(db);
-
-  res.json({ ok: true, item: db.items[idx] });
+  if (error) return res.status(400).json({ error: error.message });
+  res.json({ ok: true, item: data });
 });
+
 
 /* -------------------------
    Fallback
