@@ -232,13 +232,17 @@ app.get("/api/products", async (req, res) => {
   res.json({ items: data });
 });
 
-app.get("/api/products/:id", (req, res) => {
-  const id = String(req.params.id || "");
-  const db = getProducts();
-  const p = db.items.find(x => x.id === id);
-  if (!p) return res.status(404).json({ error: "Not found" });
-  res.json(p);
+app.get("/api/products/:id", async (req, res) => {
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("id", req.params.id)
+    .single();
+
+  if (error) return res.status(404).json({ error: "Not found" });
+  res.json(data);
 });
+
 
 app.post("/api/orders", async (req, res) => {
   const { customerName, customerEmail, customerPhone, customerAddress, items } = req.body;
@@ -300,10 +304,16 @@ app.post("/admin/api/login", loginLimiter, (req, res) => {
   res.json({ ok: true, token, expiresIn: 2 * 60 * 60 });
 });
 
-app.get("/admin/api/products", requireAdmin, (req, res) => {
-  const db = getProducts();
-  res.json({ items: db.items, updatedAt: db.updatedAt });
+app.get("/admin/api/products", requireAdmin, async (req, res) => {
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ items: data });
 });
+
 
 app.post("/admin/api/products", requireAdmin, async (req, res) => {
   const { name, price, logo, description } = req.body;
