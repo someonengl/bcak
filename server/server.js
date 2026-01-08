@@ -1,10 +1,5 @@
 "use strict";
-const { createClient } = require("@supabase/supabase-js");
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-);
 
 const path = require("path");
 const fs = require("fs");
@@ -29,6 +24,13 @@ const ADMIN_PASSWORD_BCRYPT =
 const DATA_DIR = path.join(__dirname, "data");
 const PRODUCTS_FILE = path.join(DATA_DIR, "products.json");
 const ORDERS_FILE = path.join(DATA_DIR, "orders.json");
+const { createClient } = require("@supabase/supabase-js");
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+);
+
 
 /* -------------------------
    Utilities
@@ -220,9 +222,14 @@ app.use("/admin", express.static(path.join(__dirname, "..", "admin")));
 /* -------------------------
    Public API
 -------------------------- */
-app.get("/api/products", (req, res) => {
-  const db = getProducts();
-  res.json({ items: db.items, updatedAt: db.updatedAt });
+app.get("/api/products", async (req, res) => {
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ items: data });
 });
 
 app.get("/api/products/:id", (req, res) => {
@@ -233,84 +240,40 @@ app.get("/api/products/:id", (req, res) => {
   res.json(p);
 });
 
-app.post("/api/orders", (req, res) => {
-  const body = req.body || {};
+app.post("/api/orders", async (req, res) => {
+  const { customerName, customerEmail, customerPhone, customerAddress, items } = req.body;
 
-  const customerName = sanitizeText(body.customerName, 120);
-  const customerEmail = sanitizeText(body.customerEmail, 200);
-  const customerPhone = sanitizeText(body.customerPhone, 60);
-  const customerAddress = sanitizeText(body.customerAddress, 400);
-  const items = Array.isArray(body.items) ? body.items : [];
+  const total = items.reduce((s, i) => s + i.lineTotal, 0);
 
-  if (
-    !isNonEmptyString(customerName) ||
-    !isNonEmptyString(customerEmail) ||
-    !isNonEmptyString(customerPhone) ||
-    !isNonEmptyString(customerAddress)
-  ) {
-    return res
-      .status(400)
-      .json({ error: "Missing required customer fields" });
-  }
+  const { data: order, error } = await supabase
+    .from("orders")
+    .insert([{
+      status: "NEW",
+      total,
+      customer_name: customerName,
+      customer_email: customerEmail,
+      customer_phone: customerPhone,
+      customer_address: customerAddress
+    }])
+    .select()
+    .single();
 
-  if (items.length === 0) {
-    return res.status(400).json({ error: "Cart is empty" });
-  }
+  if (error) return res.status(500).json({ error: error.message });
 
-  const productsDb = getProducts();
-  const productsById = new Map(
-    productsDb.items.map(p => [p.id, p])
-  );
+  const orderItems = items.map(i => ({
+    order_id: order.id,
+    product_id: i.productId,
+    name: i.name,
+    unit_price: i.unitPrice,
+    qty: i.qty,
+    line_total: i.lineTotal
+  }));
 
-  const normalizedItems = [];
-  let total = 0;
+  await supabase.from("order_items").insert(orderItems);
 
-  for (const it of items) {
-    const pid = String(it.productId || "");
-    const qty = Number(it.qty || 0);
-
-    if (!pid || !Number.isFinite(qty) || qty <= 0 || qty > 999) {
-      return res.status(400).json({ error: "Invalid cart item" });
-    }
-
-    const p = productsById.get(pid);
-    if (!p) {
-      return res.status(400).json({ error: "Product not found: " + pid });
-    }
-
-    const unit = normalizeMoney(p.price);
-    const line = normalizeMoney(unit * qty);
-    total = normalizeMoney(total + line);
-
-    normalizedItems.push({
-      productId: p.id,
-      name: p.name,
-      unitPrice: unit,
-      qty,
-      lineTotal: line
-    });
-  }
-
-  const order = {
-    id: makeId(),
-    createdAt: nowIso(),
-    status: "NEW",
-    customer: {
-      name: customerName,
-      email: customerEmail,
-      phone: customerPhone,
-      address: customerAddress
-    },
-    items: normalizedItems,
-    total
-  };
-
-  const ordersDb = getOrders();
-  ordersDb.items.unshift(order);
-  saveOrders(ordersDb);
-
-  res.json({ ok: true, orderId: order.id, total: order.total });
+  res.json({ ok: true, orderId: order.id });
 });
+
 
 /* -------------------------
    Admin auth + Admin API
@@ -342,26 +305,19 @@ app.get("/admin/api/products", requireAdmin, (req, res) => {
   res.json({ items: db.items, updatedAt: db.updatedAt });
 });
 
-app.post("/admin/api/products", requireAdmin, (req, res) => {
-  const body = req.body || {};
+app.post("/admin/api/products", requireAdmin, async (req, res) => {
+  const { name, price, logo, description } = req.body;
 
-  const name = sanitizeText(body.name, 120);
-  const price = normalizeMoney(body.price);
-  const logo = sanitizeText(body.logo, 600);
-  const description = sanitizeText(body.description, 2000);
+  const { data, error } = await supabase
+    .from("products")
+    .insert([{ name, price, logo, description }])
+    .select()
+    .single();
 
-  if (!isNonEmptyString(name) || price === null || price < 0) {
-    return res.status(400).json({ error: "Invalid product fields" });
-  }
-
-  const db = getProducts();
-  const p = { id: makeId(), name, price, logo, description };
-
-  db.items.unshift(p);
-  saveProducts(db);
-
-  res.json({ ok: true, item: p });
+  if (error) return res.status(400).json({ error: error.message });
+  res.json({ ok: true, item: data });
 });
+
 
 app.put("/admin/api/products/:id", requireAdmin, (req, res) => {
   const id = String(req.params.id || "");
@@ -394,20 +350,16 @@ app.put("/admin/api/products/:id", requireAdmin, (req, res) => {
   res.json({ ok: true, item: db.items[idx] });
 });
 
-app.delete("/admin/api/products/:id", requireAdmin, (req, res) => {
-  const id = String(req.params.id || "");
-  const db = getProducts();
+app.delete("/admin/api/products/:id", requireAdmin, async (req, res) => {
+  const { error } = await supabase
+    .from("products")
+    .delete()
+    .eq("id", req.params.id);
 
-  const before = db.items.length;
-  db.items = db.items.filter(p => p.id !== id);
-
-  if (db.items.length === before) {
-    return res.status(404).json({ error: "Not found" });
-  }
-
-  saveProducts(db);
+  if (error) return res.status(400).json({ error: error.message });
   res.json({ ok: true });
 });
+
 
 app.get("/admin/api/orders", requireAdmin, (req, res) => {
   const db = getOrders();
