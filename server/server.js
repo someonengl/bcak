@@ -247,7 +247,7 @@ app.get("/api/products/:id", async (req, res) => {
 app.post("/api/orders", async (req, res) => {
   const { customerName, customerEmail, customerPhone, customerAddress, items } = req.body;
 
-  if (!Array.isArray(items) || items.length === 0) {
+  if (!items || items.length === 0) {
     return res.status(400).json({ error: "Cart is empty" });
   }
 
@@ -255,11 +255,6 @@ app.post("/api/orders", async (req, res) => {
   const orderItems = [];
 
   for (const it of items) {
-    const qty = Number(it.qty);
-    if (!Number.isFinite(qty) || qty <= 0) {
-      return res.status(400).json({ error: "Invalid quantity" });
-    }
-
     const { data: product, error } = await supabase
       .from("products")
       .select("id, name, price")
@@ -271,7 +266,9 @@ app.post("/api/orders", async (req, res) => {
     }
 
     const unitPrice = Number(product.price);
+    const qty = Number(it.qty);
     const lineTotal = unitPrice * qty;
+
     total += lineTotal;
 
     orderItems.push({
@@ -300,9 +297,12 @@ app.post("/api/orders", async (req, res) => {
     return res.status(500).json({ error: orderError.message });
   }
 
-  await supabase.from("order_items").insert(
-    orderItems.map(i => ({ ...i, order_id: order.id }))
-  );
+  await supabase
+    .from("order_items")
+    .insert(orderItems.map(i => ({
+      ...i,
+      order_id: order.id
+    })));
 
   res.json({ ok: true, orderId: order.id, total });
 });
@@ -402,13 +402,29 @@ app.delete("/admin/api/products/:id", requireAdmin, async (req, res) => {
 
 
 app.get("/admin/api/orders", requireAdmin, async (req, res) => {
-  const { data, error } = await supabase
+  const { data: orders, error } = await supabase
     .from("orders")
     .select("*")
     .order("created_at", { ascending: false });
 
-  if (error) return res.status(500).json({ error: error.message });
-  res.json({ items: data });
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.json({ items: orders });
+});
+
+app.delete("/admin/api/orders/:id", requireAdmin, async (req, res) => {
+  const { id } = req.params;
+
+  await supabase.from("order_items").delete().eq("order_id", id);
+  const { error } = await supabase.from("orders").delete().eq("id", id);
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.json({ ok: true });
 });
 
 
