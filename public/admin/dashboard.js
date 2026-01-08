@@ -190,7 +190,7 @@ function renderProducts() {
       if (!confirm(`Delete product: ${p.name}?`)) return;
 
       try {
-        await adminJson(`/admin/api/products/${encodeURIComponent(id)}`, { method: "DELETE" });
+        await adminJson(`https://bcak-8yoa.onrender.com/admin/api/products/${encodeURIComponent(id)}`, { method: "DELETE" });
         notice(productMsg, "Deleted.", "ok");
         await loadProducts();
       } catch (e) {
@@ -201,7 +201,7 @@ function renderProducts() {
 }
 
 async function loadProducts() {
-  const data = await adminJson("/admin/api/products");
+  const data = await adminJson("https://bcak-8yoa.onrender.com/admin/api/products");
   products = Array.isArray(data.items) ? data.items : [];
   renderProducts();
 }
@@ -222,7 +222,7 @@ productForm.addEventListener("submit", async (e) => {
 
   try {
     if (pid.value) {
-      await adminJson(`/admin/api/products/${encodeURIComponent(pid.value)}`, {
+      await adminJson(`https://bcak-8yoa.onrender.com/admin/api/products/${encodeURIComponent(pid.value)}`, {
         method: "PUT",
         body: JSON.stringify(body)
       });
@@ -316,7 +316,7 @@ function renderOrders() {
 }
 
 async function loadOrders() {
-  const data = await adminJson("/admin/api/orders");
+  const data = await adminJson("https://bcak-8yoa.onrender.com/admin/api/orders");
   orders = Array.isArray(data.items) ? data.items : [];
   renderOrders();
   if (selectedOrderId) selectOrder(selectedOrderId, false);
