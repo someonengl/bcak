@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NovaMarket — Cart & Checkout</title>
+  <link rel="stylesheet" href="./style.css"/>
+</head>
+<body>
+  <div class="container">
+    <header class="topbar">
+      <a class="brand" href="./index.html" aria-label="Home">
+        <span class="dot" aria-hidden="true"></span>
+        <span>NovaMarket</span>
+      </a>
+      <nav class="nav">
+        <a class="pill" href="./index.html">Store</a>
+        <a class="pill" href="./cart.html">Cart <span class="badge" id="cartCount">0</span></a>
+      </nav>
+    </header>
+
+    <div style="height:14px"></div>
+
+    <div class="kv">
+      <section class="panel">
+        <h2 class="h">Your cart</h2>
+        <div id="cartArea"></div>
+        <div id="cartMsg" style="margin-top:12px"></div>
+      </section>
+
+      <section class="panel">
+        <h2 class="h">Checkout</h2>
+        <div class="muted small" style="margin:-6px 0 12px; line-height:1.5">
+          Enter your details. A confirmation email can be sent using EmailJS (optional).
+        </div>
+
+        <form id="checkoutForm" class="form">
+          <div>
+            <label for="name">Full name</label>
+            <input id="name" required placeholder="Your name"/>
+          </div>
+          <div>
+            <label for="email">Email (Gmail)</label>
+            <input id="email" type="email" required placeholder="you@gmail.com"/>
+          </div>
+          <div>
+            <label for="phone">Phone number</label>
+            <input id="phone" required placeholder="+994..."/>
+          </div>
+          <div>
+            <label for="address">Address</label>
+            <textarea id="address" required placeholder="Street, building, apartment, city"></textarea>
+          </div>
+
+          <div class="row" style="justify-content:flex-start;gap:10px">
+            <button class="btn primary" type="submit">Place order</button>
+            <button class="btn danger" type="button" id="clearCart">Clear cart</button>
+          </div>
+        </form>
+
+        <div id="checkoutMsg" style="margin-top:12px"></div>
+
+        <div class="notice" style="margin-top:14px">
+          <div style="font-weight:800;margin-bottom:6px">EmailJS setup (optional)</div>
+          <div class="muted small" style="line-height:1.6">
+            If you want checkout to email the customer, edit <b>public/emailjs-config.js</b> and paste your keys. If you don't configure it, the order still saves and is visible in the Admin dashboard.
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="footer">After ordering, open Admin to view and manage orders.</div>
+  </div>
+
+  <!-- EmailJS (optional). If you don't want it, you can remove these two script tags. -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script src="./emailjs-config.js"></script>
+
+  <script type="module" src="./cart.js"></script>
+</body>
+</html>

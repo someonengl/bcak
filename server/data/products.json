@@ -1,0 +1,19 @@
+{
+  "updatedAt": "2026-01-08T17:47:42.873Z",
+  "items": [
+    {
+      "id": "9db3bb9c-52d9-4c9c-a103-a052856ee747",
+      "name": "Nebula Keyboard",
+      "price": 89.5,
+      "logo": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80",
+      "description": "Mechanical keyboard with a clean, minimal aesthetic and satisfying switches."
+    },
+    {
+      "id": "06e6b1a2-94ae-46be-bda0-d914974b5593",
+      "name": "Prism Smart Lamp",
+      "price": 54,
+      "logo": "https://images.unsplash.com/photo-1504197885-609741792ce7?auto=format&fit=crop&w=800&q=80",
+      "description": "Mood lighting with scenes and schedules. Perfect for desks and bedrooms."
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NovaMarket — Store</title>
+  <link rel="stylesheet" href="./style.css"/>
+</head>
+<body>
+  <div class="container">
+    <header class="topbar">
+      <a class="brand" href="./index.html" aria-label="Home">
+        <span class="dot" aria-hidden="true"></span>
+        <span>NovaMarket</span>
+      </a>
+      <nav class="nav">
+        <a class="pill" href="./cart.html">
+          Cart <span class="badge" id="cartCount">0</span>
+        </a>
+        <a class="pill" href="/admin/login.html" title="Admin website (separate)">
+          Admin
+        </a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <h1>Marketplace, upgraded.</h1>
+      <p>Browse products, add to cart, and checkout. Admin lives in a separate site with secure login, product CRUD, and order management.</p>
+    </section>
+
+    <section class="toolbar">
+      <div class="field" role="search">
+        <span class="muted">Search</span>
+        <input id="q" placeholder="name or description..." autocomplete="off"/>
+      </div>
+      <div class="field">
+        <span class="muted">Sort</span>
+        <select id="sort">
+          <option value="new">Newest</option>
+          <option value="price_asc">Price: low → high</option>
+          <option value="price_desc">Price: high → low</option>
+          <option value="name_asc">Name: A → Z</option>
+        </select>
+      </div>
+    </section>
+
+    <main>
+      <div id="grid" class="grid" aria-live="polite"></div>
+      <div id="empty" class="notice" style="display:none;margin-top:14px;">
+        No products match your search.
+      </div>
+    </main>
+
+    <div class="footer">Local demo marketplace. Orders are saved on your machine (server/data/orders.json).</div>
+  </div>
+
+  <script type="module" src="./store.js"></script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NovaMarket — Product</title>
+  <link rel="stylesheet" href="./style.css"/>
+</head>
+<body>
+  <div class="container">
+    <header class="topbar">
+      <a class="brand" href="./index.html" aria-label="Home">
+        <span class="dot" aria-hidden="true"></span>
+        <span>NovaMarket</span>
+      </a>
+      <nav class="nav">
+        <a class="pill" href="./index.html">Store</a>
+        <a class="pill" href="./cart.html">Cart <span class="badge" id="cartCount">0</span></a>
+      </nav>
+    </header>
+
+    <div style="height:14px"></div>
+    <div id="root" class="panel"></div>
+
+    <div class="footer">Tip: Admin can edit products; refresh to see updates.</div>
+  </div>
+
+  <script type="module" src="./product.js"></script>
+</body>
+</html>

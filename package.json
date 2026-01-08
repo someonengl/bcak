@@ -1,0 +1,18 @@
+{
+  "name": "marketplace-admin-storefront",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Marketplace storefront + separate admin panel (no-code friendly) with JSON storage and secure admin login.",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "node server/server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2"
+  }
+}
