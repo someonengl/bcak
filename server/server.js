@@ -247,9 +247,43 @@ app.get("/api/products/:id", async (req, res) => {
 app.post("/api/orders", async (req, res) => {
   const { customerName, customerEmail, customerPhone, customerAddress, items } = req.body;
 
-  const total = items.reduce((s, i) => s + i.lineTotal, 0);
+  if (!Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ error: "Cart is empty" });
+  }
 
-  const { data: order, error } = await supabase
+  let total = 0;
+  const orderItems = [];
+
+  for (const it of items) {
+    const qty = Number(it.qty);
+    if (!Number.isFinite(qty) || qty <= 0) {
+      return res.status(400).json({ error: "Invalid quantity" });
+    }
+
+    const { data: product, error } = await supabase
+      .from("products")
+      .select("id, name, price")
+      .eq("id", it.productId)
+      .single();
+
+    if (error || !product) {
+      return res.status(400).json({ error: "Product not found" });
+    }
+
+    const unitPrice = Number(product.price);
+    const lineTotal = unitPrice * qty;
+    total += lineTotal;
+
+    orderItems.push({
+      product_id: product.id,
+      name: product.name,
+      unit_price: unitPrice,
+      qty,
+      line_total: lineTotal
+    });
+  }
+
+  const { data: order, error: orderError } = await supabase
     .from("orders")
     .insert([{
       status: "NEW",
@@ -262,21 +296,17 @@ app.post("/api/orders", async (req, res) => {
     .select()
     .single();
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (orderError) {
+    return res.status(500).json({ error: orderError.message });
+  }
 
-  const orderItems = items.map(i => ({
-    order_id: order.id,
-    product_id: i.productId,
-    name: i.name,
-    unit_price: i.unitPrice,
-    qty: i.qty,
-    line_total: i.lineTotal
-  }));
+  await supabase.from("order_items").insert(
+    orderItems.map(i => ({ ...i, order_id: order.id }))
+  );
 
-  await supabase.from("order_items").insert(orderItems);
-
-  res.json({ ok: true, orderId: order.id });
+  res.json({ ok: true, orderId: order.id, total });
 });
+
 
 
 /* -------------------------
