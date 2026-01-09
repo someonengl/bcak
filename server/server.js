@@ -203,6 +203,21 @@ app.use(
 );
 
 app.use(express.json({ limit: "1mb" }));
+app.get("/admin/api/orders/:id/items", async (req, res) => {
+  const { id } = req.params;
+
+  const { data, error } = await supabase
+    .from("order_items")
+    .select("name, unit_price, qty, line_total")
+    .eq("order_id", id);
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  // IMPORTANT: return ARRAY, not { items: data }
+  res.json(data);
+});
 
 app.use(
   rateLimit({
