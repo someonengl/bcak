@@ -306,6 +306,12 @@ function renderOrders() {
       <tbody>${rows}</tbody>
     </table>
   `;
+  async function loadOrderItems(orderId) {
+    return await adminJson(
+      `https://bcak-8yoa.onrender.com/admin/api/orders/${encodeURIComponent(orderId)}/items`
+    );
+  }
+
 
   ordersTableWrap.querySelectorAll("tr[data-open]").forEach(tr => {
     tr.addEventListener("click", () => {
@@ -331,14 +337,24 @@ function selectOrder(id, scroll = true) {
     return;
   }
 
-  const itemsHtml = (o.items || []).map(it => `
-    <tr>
-      <td>${esc(it.name || it.productId)}</td>
-      <td>${Number(it.unitPrice ?? 0).toFixed(2)}</td>
-      <td>${esc(it.qty)}</td>
-      <td>${Number(it.lineTotal ?? 0).toFixed(2)}</td>
-    </tr>
-  `).join("");
+  let items = [];
+try {
+  items = await loadOrderItems(id);
+} catch (e) {
+  items = [];
+}
+
+  const itemsHtml = items.length
+    ? items.map(it => `
+        <tr>
+          <td>${esc(it.name)}</td>
+          <td>${Number(it.unit_price).toFixed(2)}</td>
+          <td>${esc(it.qty)}</td>
+          <td>${Number(it.line_total).toFixed(2)}</td>
+        </tr>
+      `).join("")
+    : `<tr><td colspan="4" class="muted">No items</td></tr>`;
+
 
   orderDetails.innerHTML = `
     <div class="notice">
