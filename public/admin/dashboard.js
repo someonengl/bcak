@@ -1,5 +1,5 @@
 "use strict";
-
+requireTokenOrRedirect();
 const TOKEN_KEY = "novamarket_admin_token_v1";
 
 function getToken() {
