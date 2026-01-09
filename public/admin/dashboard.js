@@ -258,7 +258,7 @@ function filteredOrders() {
   if (!q) return orders;
   return orders.filter(o => {
     const t = (o.id||"") + " " + (o.status||"") + " " +
-      (o.customer?.name||"") + " " + (o.customer?.email||"");
+      (o.customer_name||"") + " " + (o.customer_email||"");
     return t.toLowerCase().includes(q);
   });
 }
@@ -286,8 +286,8 @@ function renderOrders() {
       </td>
       <td><span class="pill" style="border-radius:12px">${esc(o.status || "NEW")}</span></td>
       <td>
-        <div style="font-weight:800">${esc(o.customer?.name || "")}</div>
-        <div class="muted small">${esc(o.customer?.email || "")}</div>
+        <div style="font-weight:800">${esc(o.customer_name || "")}</div>
+        <div class="muted small">${esc(o.customer_email || "")}</div>
       </td>
       <td>${Number(o.total ?? 0).toFixed(2)}</td>
     </tr>
@@ -362,10 +362,10 @@ function selectOrder(id, scroll = true) {
 
     <div style="font-weight:900;margin-bottom:6px">Customer</div>
     <div class="muted small">
-      <div><b>Name:</b> ${esc(o.customer?.name || "")}</div>
-      <div><b>Email:</b> ${esc(o.customer?.email || "")}</div>
-      <div><b>Phone:</b> ${esc(o.customer?.phone || "")}</div>
-      <div><b>Address:</b> ${esc(o.customer?.address || "")}</div>
+      <div><b>Name:</b> ${esc(o.customer_name || "")}</div>
+      <div><b>Email:</b> ${esc(o.customer_email || "")}</div>
+      <div><b>Phone:</b> ${esc(o.customer_phone || "")}</div>
+      <div><b>Address:</b> ${esc(o.customer_address || "")}</div>
     </div>
 
     <div class="hr"></div>
@@ -442,10 +442,10 @@ exportCsvBtn.addEventListener("click", () => {
       o.created_At,
       o.status,
       String(o.total ?? ""),
-      o.customer?.name ?? "",
-      o.customer?.email ?? "",
-      o.customer?.phone ?? "",
-      o.customer?.address ?? "",
+      o.customer_name ?? "",
+      o.customer_email ?? "",
+      o.customer_phone ?? "",
+      o.customer_address ?? "",
       items
     ]);
   }
