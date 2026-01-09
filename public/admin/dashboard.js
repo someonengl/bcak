@@ -1,5 +1,4 @@
 "use strict";
-requireTokenOrRedirect();
 const TOKEN_KEY = "novamarket_admin_token_v1";
 
 function getToken() {
@@ -228,7 +227,7 @@ productForm.addEventListener("submit", async (e) => {
       });
       notice(productMsg, "Updated product.", "ok");
     } else {
-      await adminJson("/admin/api/products", {
+      await adminJson("https://bcak-8yoa.onrender.com/admin/api/products", {
         method: "POST",
         body: JSON.stringify(body)
       });
@@ -306,11 +305,6 @@ function renderOrders() {
       <tbody>${rows}</tbody>
     </table>
   `;
-  async function loadOrderItems(orderId) {
-    return await adminJson(
-      `https://bcak-8yoa.onrender.com/admin/api/orders/${encodeURIComponent(orderId)}/items`
-    );
-  }
 
 
   ordersTableWrap.querySelectorAll("tr[data-open]").forEach(tr => {
@@ -327,8 +321,12 @@ async function loadOrders() {
   renderOrders();
   if (selectedOrderId) selectOrder(selectedOrderId, false);
 }
-
-function selectOrder(id, scroll = true) {
+async function loadOrderItems(orderId) {
+    return await adminJson(
+      `https://bcak-8yoa.onrender.com/admin/api/orders/${encodeURIComponent(orderId)}/items`
+    );
+  }
+async function selectOrder(id, scroll = true) {
   selectedOrderId = id;
   const o = orders.find(x => x.id === id);
   if (!o) {
@@ -455,7 +453,7 @@ exportCsvBtn.addEventListener("click", () => {
     const items = (o.items || []).map(it => `${it.name} x${it.qty}`).join(" | ");
     rows.push([
       o.id,
-      o.created_At,
+      o.created_at,
       o.status,
       String(o.total ?? ""),
       o.customer_name ?? "",
@@ -482,4 +480,6 @@ exportCsvBtn.addEventListener("click", () => {
   } catch (e) {
     notice(globalMsg, e.message, "bad");
   }
+  requireTokenOrRedirect();  
+  showTab("products");
 })();
